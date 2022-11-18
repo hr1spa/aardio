@@ -1,0 +1,121 @@
+import win.ui;
+/*DSG{{*/
+mainForm = win.form(text="循环找图";right=440;bottom=98)
+mainForm.add(
+button={cls="button";text="出现截图图像即点";left=115;top=8;right=254;bottom=43;z=2};
+button2={cls="button";text="点击";left=206;top=53;right=260;bottom=86;z=6};
+buttonFind={cls="button";text="找字2";left=284;top=54;right=345;bottom=84;z=9};
+checkbox={cls="checkbox";text="循环";left=381;top=57;right=427;bottom=83;z=8};
+edit={cls="edit";text="90";left=321;top=10;right=355;bottom=38;edge=1;z=4};
+editText={cls="edit";left=63;top=54;right=194;bottom=86;edge=1;z=5};
+static={cls="static";text="任意方式截图后";left=11;top=17;right=119;bottom=43;transparent=1;z=1};
+static2={cls="static";text="相似度";left=270;top=14;right=338;bottom=39;transparent=1;z=3};
+static3={cls="static";text="找字";left=16;top=60;right=50;bottom=85;transparent=1;z=7}
+)
+/*}}*/
+
+import mouse;
+import soImage;
+import dotNet.ocr;
+
+import win;
+win.setPos(mainForm.hwnd,0,0)
+win.setTopmost(mainForm.hwnd)
+
+mainForm.button.oncommand = function(id,event){
+	var img = soImage(); //创建图像
+	img.fromClipBD(); //获取剪贴板图像
+	while(win.delay(1000)){
+		var s=5000
+		//var s=10*1000//10秒
+		win.delay(s)
+		var imgScreen = soImage();//创建图像
+		imgScreen.capture(); //抓屏
+	
+		相似度,x,y = img.findImage(imgScreen) //返回值x,y 为找到的坐标
+		mainForm.text="相似度=:"++相似度++"  x:"++x++"  y:"++y;
+		if( 相似度>tonumber(mainForm.edit.text) ){
+    	//相似度，为0到100之间的值，100为完全相似,0为完全不相似
+    	mouse.moveTo(x/2,y/2,true);
+    	mouse.click();
+	}
+	
+	}
+
+	
+
+	
+}
+
+mainForm.button2.oncommand = function(id,event){
+	//创建 OCR 对象
+	var text=mainForm.editText.text
+	mainForm.editText.text="";
+	mainForm.redraw();
+
+	var ocr = dotNet.ocr();	
+	//识别屏幕上的文字
+	var ocrResult = ocr.detectScreen()	
+	//查找文字在屏幕上的位置
+	var x,y = ocrResult.findPoint(
+		text,0.1
+	);
+	mouse.moveTo(x+100,y,true)
+	mouse.clickDb();
+}
+//效果好
+import string.ocrLite;
+import string.ocrLite.defaultModels;
+mainForm.buttonFind.oncommand = function(id,event){
+	var text=mainForm.editText.text
+	mainForm.editText.text="";
+	mainForm.redraw();
+	var ocr = string.ocrLite();	
+	//识别屏幕上的文字
+	var ocrResult = ocr.detectScreen();	
+	//查找文字在屏幕上的位置
+	var x,y = ocrResult.findPoint(
+		text,0.2
+	);
+	mouse.moveTo(x,y,true)
+	mouse.click();
+}
+
+mouse.moveTo(x,y,true);
+mainForm.show();
+return win.loopMessage();
+//winex.accObject //Microsoft Active Accessibility 自动化接口
+//屏幕找图
+/*
+import soImage;
+var img = soImage();
+img.load("/res/find.jpg");
+img.setBytes( imgBytes,"*.png"); 
+var sm,x,y = imgFind.findImageInWindow(hwnd);
+*/
+/*
+import gdi;
+import win;
+import mouse;
+import soImage;
+
+//抓屏
+var imgScreen = soImage();
+imgScreen.capture(); 
+
+//在图像上搜索指定颜色的点,
+//第一个参数是一个表示查找颜色的数值,更多参数用法请查看智能提示
+var x,y = imgScreen.findColor( gdi.RGB(48,171,53) );
+
+//返回该坐标所在显示器左上角位置
+var scrX,scrY = win.getScreenPos(x=x,y=y); 
+
+//快速移动鼠标(相对移动)
+mouse.move(scrX,scrY,true);
+
+//获取虚拟屏幕位置，双屏幕时可能起始坐标可能返回负数
+var scrX,scrY = win.getScreenPos(); 
+
+//慢速移动鼠标，显示移动轨迹
+mouse.moveTo(x+scrX,y+scrY,true);
+*/
